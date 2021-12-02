@@ -81,7 +81,13 @@ async def volume_control(surface_dial_device, blu_os_device):
         
 
 def main():
-    surface_dial_device = InputDevice('/dev/input/event0')
+    while True:
+        try:
+            surface_dial_device = InputDevice('/dev/input/event0')
+            break
+        except:
+            print('/dev/input/event0 not available...')
+            time.sleep(3)
     blu_os_device = BluOSDevice(ip='192.168.1.7', port=11000)
     
     loop = asyncio.get_event_loop()
