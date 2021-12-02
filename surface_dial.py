@@ -10,7 +10,7 @@ def epoch_ms():
     return round(time.time() * 1000)
 
 class BluOSDevice(object):
-    def __init__(self, ip, port, max_volume_level=70, step=2, dead_time_ms=50):
+    def __init__(self, ip, port, max_volume_level=60, step=2, dead_time_ms=50):
         # 0 to 100.
         self._max_volume_level = max_volume_level
         self._url = 'http://' + ip + ':' + str(port) + '/'
@@ -36,7 +36,7 @@ class BluOSDevice(object):
             self._time_since_last_action = current_time
         
         new_volume = self._current_volume + delta_volume
-        if new_volume > self._max_volume_level:
+        if delta_volume > 0 and new_volume > self._max_volume_level:
             print('Exceeded max volume', self._max_volume_level)
             return
         
