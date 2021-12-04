@@ -21,6 +21,14 @@ class BluOSDevice(object):
         r = xmltodict.parse(r.content)
         self._current_volume = int(r['status']['volume'])
         self._time_since_last_action = epoch_ms()
+        self._is_muted = False
+
+    def toggle_mute(self):
+        mute_value = 0 if self._is_muted else 1
+        url = self._url + 'Volume?mute=' + str(mute_value)
+        r = requests.get(url)
+        r = xmltodict.parse(r.content)
+        self._is_muted = True if int(r['volume']['@mute']) == 1 else False
 
     def increase_volume(self):
         self._change_volume(self._step)
@@ -61,6 +69,8 @@ def rotated_counter_clockwise(event):
 
 async def volume_control(surface_dial_device, blu_os_device):
     button_held = False
+    mute_detection_time_ms = 250
+    last_button_release = epoch_ms()
     async for event in surface_dial_device.async_read_loop():
         print(repr(event))
         if button_pressed(event):
@@ -69,6 +79,9 @@ async def volume_control(surface_dial_device, blu_os_device):
         elif button_released(event):
             print('Button released.')
             button_held = False
+            if epoch_ms() - last_button_release < mute_detection_time_ms:
+                blu_os_device.toggle_mute()
+            last_button_release = epoch_ms()
         elif rotated_clockwise(event):
             print('Rotated CW.')
             if button_held:
